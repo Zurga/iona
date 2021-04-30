@@ -126,8 +126,8 @@ defmodule Iona.Processing do
                     cd: dirname,
                     env: Keyword.get(opts, :processor_env, [])
                   ) do
-               {_output, 0} = result -> {:cont, result}
-               {_output, status} = result when status > 0 -> {:halt, result}
+               {_output, code} = result when code < 2 -> {:cont, result}
+               {_output, status} = result when status > 1 -> {:halt, result}
              end
            end) do
       {:ok, %Iona.Document{format: format, output_path: output_path}}
@@ -196,10 +196,10 @@ defmodule Iona.Processing do
            stderr_to_stdout: true,
            env: Keyword.get(opts, :preprocessor_env, [])
          ) do
-      {_output, 0} ->
+      {_output, status} when status < 2 ->
         preprocess(filename, dir, remaining, opts)
 
-      {output, status} when is_binary(output) and status > 0 ->
+      {output, status} when is_binary(output) and status > 1 ->
         {:error,
          "Preprocessing with command `#{preprocessor}` failed with status code #{status} output: #{
            output
